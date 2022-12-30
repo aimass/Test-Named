@@ -6,7 +6,7 @@ use warnings;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our $VERSION = 0.01;
+our $VERSION = 0.03;
 our @EXPORT_OK = ( );
 our @EXPORT = qw( main before_launch before_exit );
 
