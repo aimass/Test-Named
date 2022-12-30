@@ -8,9 +8,14 @@ require Exporter;
 our @ISA = qw(Exporter);
 our $VERSION = 0.01;
 our @EXPORT_OK = ( );
-our @EXPORT = qw( main );
+our @EXPORT = qw( main before_launch before_exit );
+
+my $pre_test;
+my $post_test;
 
 sub main {
+
+    &$pre_test if defined $pre_test;
 
     my @args  = @_;
 
@@ -20,6 +25,7 @@ sub main {
                 unless my $func = caller->can( 'test_' . $name );
             $func->();
         }
+        &$post_test if defined $post_test;
         return 0;
     }
 
@@ -28,7 +34,20 @@ sub main {
         caller->$sub();
     }
 
+    &$post_test if defined $post_test;
     return 0;
+}
+
+sub before_launch {
+    my $ref = shift;
+    die 'Not a CODE reference for before_launch' unless ref $ref eq 'CODE';
+    $pre_test = $ref;
+}
+
+sub before_exit {
+    my $ref = shift;
+    die 'Not a CODE reference for before_exit' unless ref $ref eq 'CODE';
+    $post_test = $ref;
 }
 
 1;
@@ -41,6 +60,10 @@ Test::Named - Perl extension for named tests. Inspired on this:
 http://www.modernperlbooks.com/mt/2013/05/running-named-perl-tests-from-prove.html
 
 =head1 SYNOPSIS
+
+  #################
+  #   WITH PLAN   #
+  #################
 
   # load your fav test harness
   use Test::More tests => 3;
@@ -61,6 +84,37 @@ http://www.modernperlbooks.com/mt/2013/05/running-named-perl-tests-from-prove.ht
   }
   etc..
 
+  #################
+  #    NO PLAN    #
+  #################
+
+  # load your fav test harness - no plan
+  use Test::More;
+  use Test::Named;
+
+  # load module to test
+  use_ok(Foo::Bar);
+
+  # use hooks to setup before and after testing
+  before_launch(sub { ok(1, 'Before Launch Executed') });
+  before_exit( sub { done_testing() });
+
+  # run all tests unless named test specified
+  exit main( @ARGV );
+
+  # named tests are declared using test_ prefix
+  sub test_foo {
+    ...
+  }
+  sub test_bar {
+
+  }
+  etc..
+
+  #################
+  #   RUN TESTS   #
+  #################
+
   prove -v -I lib/ t/*
   prove -v -I lib/ t/TestFile.t
   prove -v -I lib/ t/TestFile.t :: foo
@@ -73,7 +127,8 @@ much like JUnit-based testing frameworks.
 
 =head2 EXPORT
 
-This module exports a subroutine named main()
+This module exports a subroutine named main() and two hooks before_lauch and before_exit that are setup
+using code references (see SYNOPSIS above)
 
 =head1 SEE ALSO
 

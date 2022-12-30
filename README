@@ -1,6 +1,9 @@
 Test-Named version 0.01
 =======================
 
+Test::Named - Perl extension for named tests. Inspired on this:
+http://www.modernperlbooks.com/mt/2013/05/running-named-perl-tests-from-prove.html
+
 INSTALLATION
 
 To install this module type the following:

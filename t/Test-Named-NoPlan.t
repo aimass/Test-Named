@@ -5,10 +5,10 @@ use Test::More;
 
 use_ok('Test::Named');
 
-my $r = main( 'foo' );
-done_testing;
-diag('Should exit 0');
-exit $r;
+before_launch(sub { ok(1, 'Before Launch Executed') });
+before_exit( sub { done_testing() });
+
+exit main( );
 
 sub test_foo {
     ok(1==1,'Test Foo');
